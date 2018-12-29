@@ -44,6 +44,7 @@ export default class Slider {
 	  this.currentDom = null;
 	  this.prevDom = null;
 	  this.nextDom = null;
+	  this.currentIndex = 0;
 	  this.startX = 0;	//点击位置
 	  this.lock = true;	//是否可滑动
 	  this.moveX = 0;	//滑动距离
@@ -98,9 +99,7 @@ export default class Slider {
 			clearTimeout(self.timer);	//清除定时器
 
 			if(currentDom && prevDom && nextDom) {	//清除过渡
-				currentDom.style.transition = 'unset';
-				prevDom.style.transition = 'unset';
-				nextDom.style.transition = 'unset';
+				self._unSetTransition();
 			}
 
 			//获取关联的三个节点
@@ -135,6 +134,7 @@ export default class Slider {
 			}else if(self.moveX >= self.transformX) {
 				self.prev();
 			}else {
+				self._setTransition();
 				currentDom.style.transform = `translate(0px, 0px)`;
 				prevDom.style.transform = `translate(${-clientW}px, 0px)`;
 				nextDom.style.transform = `translate(${clientW}px, 0px)`;
@@ -145,6 +145,7 @@ export default class Slider {
 		})
 		let timer = null;
 		window.onresize = function() {
+			self._unSetTransition();
 			timer && clearTimeout(timer); 
 			timer = setTimeout(() => {
 				self.initSlider();
@@ -153,7 +154,15 @@ export default class Slider {
 	}
 	setLoop() {
 		this.timer = setInterval(() => {
+			//初始化位置
+			let index = this.currentIndex;
+			let childs = this.sliderGroup.children;
+			this.prevDom = index > 0 ? childs[index - 1] : childs[childs.length - 1];
+			this.currentDom = childs[index];
+			this.nextDom = index < childs.length - 1 ? childs[index + 1] : childs[0];
+			this._unSetTransition();
 			this.next();
+			
 		}, this.interval);
 	}
 	_getSibling(dom, str) {
@@ -162,28 +171,30 @@ export default class Slider {
 		if(str === 'next')
 			return dom.nextElementSibling || this.sliderGroup.firstElementChild;
 	}
+	_unSetTransition() {
+		this.currentDom.style.transition = 'unset';
+		this.prevDom.style.transition = 'unset';
+		this.nextDom.style.transition = 'unset';
+	}
+	_setTransition() {
+		this.currentDom.style.transition = 'all .3s ease';
+		this.prevDom.style.transition = 'all .3s ease';
+		this.nextDom.style.transition = 'all .3s ease';
+	}
 	prev() {
+		let index = this.currentIndex, childs = this.sliderGroup.children;
+		this.currentIndex = index > 0 ? index - 1 : childs.length - 1;
+		this._setTransition();
 		this.currentDom.style.transform = `translate(${this.clientW}px, 0px)`;
 		this.prevDom.style.transform = `translate(0px, 0px)`;
 		this.nextDom.style.transform = `translate(${this.clientW * 2}px, 0px)`;
 	}
 	next() {
-		if(!this.press) {
-			this.currentDom.style.transition = 'all .3s ease';
-			this.prevDom.style.transition = 'all .3s ease';
-			this.nextDom.style.transition = 'all .3s ease';
-		}
-
+		let index = this.currentIndex, childs = this.sliderGroup.children;
+		this.currentIndex = index < childs.length - 1 ? index + 1 : 0;
+		this._setTransition();
 		this.currentDom.style.transform = `translate(${-this.clientW}px, 0px)`;
 		this.prevDom.style.transform = `translate(${-this.clientW * 2}px, 0px)`;
 		this.nextDom.style.transform = `translate(0px, 0px)`;
-
-		if(!this.press) {
-			//切换当前页
-			this.prevDom = this.currentDom;
-			this.currentDom = this.nextDom
-			this.nextDom = this.nextDom.nextElementSibling;
-			this.nextDom.style.transform = `translate(${this.clientW}px, 0px)`;
-		}
 	}
 }
