@@ -16,7 +16,7 @@ export default class Slider {
 	_initData() {
 		let defaultOpt = {
 			el: $('.slider')[0],
-			loop: true,
+			loop: false,
 			interval: 3000,
 			button: true,
 			dot: true,
