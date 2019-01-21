@@ -59,7 +59,7 @@ export default class Slider {
 		//初始页 
 		this.currentDom = sliderList[0];
 		this.nextDom = sliderList[1];
-		this.prevDom = sliderList[sliderList.length - 1];
+		this.prevDom = sliderList[len - 1];
 		this.clientW = this.el.offsetWidth;	//获取容器宽度
 
 		for(let i = 0; i < len; i++) {
